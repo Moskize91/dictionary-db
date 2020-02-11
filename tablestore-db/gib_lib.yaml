@@ -1,0 +1,16 @@
+name: netless-tablestore-db
+path:
+  dist: ./dist
+  saveTo: ./node_modules
+
+dependencies:
+  - ./netless-dictionary-db
+
+scripts:
+  didSetup: if test -d ./node_modules; then echo "true"; else echo "false"; fi
+  setup: yarn install --frozen-lockfile
+  check: yarn run check
+  pretest: node scripts/build-test.js
+  test: yarn run test
+  buildDev: yarn run build
+  buildProd: yarn run prod
