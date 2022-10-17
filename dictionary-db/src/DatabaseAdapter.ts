@@ -1,6 +1,6 @@
 import type { ModelDefinition } from "./Model";
 
-export interface DatabaseAdapter<MODELS extends Object> {
+export interface DatabaseAdapter<MODELS extends { [key: string]: any; }> {
     getModelDefinitions(): { readonly [K in keyof MODELS]: ModelDefinition<MODELS[K]> };
 
     exits?<M extends keyof MODELS>(model: M, description: GetDescription<MODELS[M]>): Promise<boolean>;

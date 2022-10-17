@@ -5,7 +5,7 @@ esbuild.build({
     bundle: true,
     entryPoints: ["test/index.ts"],
     platform: "node",
-    target: "es6",
+    target: "esnext",
     outfile: "dist/dev/test/index.js",
     external: ["chai", "chai-as-promised", "source-map-support", "tablestore"],
     plugins: [{

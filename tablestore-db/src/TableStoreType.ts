@@ -13,6 +13,7 @@ export type TableStoreModel<T extends { [key: string]: any }> = {
 };
 
 export type TableStoreTypeNode<V> = {
+    readonly type: keyof TableStoreTypeDefinition;
     readonly isValid: (value: V) => boolean;
     readonly toTableStoreValue: (value: V) => any;
     readonly fromTableStoreValue: (value: any) => V;
@@ -46,6 +47,10 @@ export type TableStoreTypeDefinition = {
     readonly enumsDefaultValue: <E extends string>(enums: E[], defaultValue: E) => TableStoreTypeNode<E>;
 };
 
+export type TableStoreModelDefinition<MODELS extends { [key: string]: any }> = {
+    readonly [K in keyof MODELS]: TableStoreModel<MODELS[K]>;
+};
+
 export function isTablestoreValueEquals(value1: any, value2: any): boolean {
     if (value1 === value2) {
         return true;
@@ -64,14 +69,17 @@ function isTableStoreLong(value: any): boolean {
     );
 }
 
+type PrimaryType = "boolean" | "string" | "float" | "integer" | "buffer" | "date";
+
 function createTableStoreType(): TableStoreTypeDefinition {
-    const types = {
-        boolean: createJavascriptTypeNode<boolean>((value) => typeof value === "boolean"),
-        string: createJavascriptTypeNode<string>((value) => typeof value === "string"),
-        float: createJavascriptTypeNode<number>((value) => typeof value === "number"),
-        buffer: createJavascriptTypeNode<Buffer>((value) => Buffer.isBuffer(value)),
+    const types: { [key in PrimaryType]: TableStoreTypeNode<any> } = {
+        boolean: createJavascriptTypeNode<boolean, "boolean">((value) => typeof value === "boolean", "boolean"),
+        string: createJavascriptTypeNode<string, "string">((value) => typeof value === "string", "string"),
+        float: createJavascriptTypeNode<number, "float">((value) => typeof value === "number", "float"),
+        buffer: createJavascriptTypeNode<Buffer, "buffer">((value) => Buffer.isBuffer(value), "buffer"),
 
         integer: Object.freeze({
+            type: "integer",
             isValid: (value: number) => Number.isSafeInteger(value),
             toTableStoreValue: (value: number) => TableStore.Long.fromNumber(value),
             fromTableStoreValue: (value: any) => {
@@ -84,89 +92,97 @@ function createTableStoreType(): TableStoreTypeDefinition {
         }),
 
         date: Object.freeze({
+            type: "date",
             isValid: (value: Date) => value instanceof Date,
             toTableStoreValue: (value: Date) => value.toISOString(),
             fromTableStoreValue: (value: any) => new Date(value),
         }),
-
-        enums: <E extends string>(enums: E[]): TableStoreTypeNode<E> => {
-            const enumList = Object.freeze([...enums]);
-            return Object.freeze({
-                isValid: (value) => {
-                    if (typeof value !== "string") {
-                        return false;
-                    }
-                    const index = enumList.indexOf(value);
-
-                    if (index === -1) {
-                        return false;
-                    }
-                    return true;
-                },
-                toTableStoreValue: (value) => {
-                    const index = enumList.indexOf(value);
-
-                    if (index === -1) {
-                        throw new Error(`unrecognized enum "${value}"`);
-                    }
-                    return TableStore.Long.fromNumber(index);
-                },
-                fromTableStoreValue: (value) => {
-                    let index: number;
-                    if (typeof value === "number") {
-                        index = value;
-                    } else {
-                        index = value.toNumber();
-                    }
-                    const enumValue = enumList[index];
-
-                    if (enumValue === undefined) {
-                        throw new Error(`unrecognized enum index ${value}`);
-                    }
-                    return enumValue;
-                },
-            });
-        },
     };
-    const enumType = types.enums;
+
+    const enums = <E extends string>(enums: E[]): TableStoreTypeNode<E> => {
+        const enumList = Object.freeze([...enums]);
+        return Object.freeze({
+            type: "enums",
+            isValid: (value) => {
+                if (typeof value !== "string") {
+                    return false;
+                }
+                const index = enumList.indexOf(value);
+
+                if (index === -1) {
+                    return false;
+                }
+                return true;
+            },
+            toTableStoreValue: (value) => {
+                const index = enumList.indexOf(value);
+
+                if (index === -1) {
+                    throw new Error(`unrecognized enum "${value}"`);
+                }
+                return TableStore.Long.fromNumber(index);
+            },
+            fromTableStoreValue: (value) => {
+                let index: number;
+                if (typeof value === "number") {
+                    index = value;
+                } else {
+                    index = value.toNumber();
+                }
+                const enumValue = enumList[index];
+
+                if (enumValue === undefined) {
+                    throw new Error(`unrecognized enum index ${value}`);
+                }
+                return enumValue;
+            },
+        });
+    };
+
+    const enumType = enums;
     const wrappedTypes = {
         ...types,
+        enums,
 
-        booleanOptional: wrapOptionalTypeNode(types.boolean),
-        stringOptional: wrapOptionalTypeNode(types.string),
-        floatOptional: wrapOptionalTypeNode(types.float),
-        integerOptional: wrapOptionalTypeNode(types.integer),
-        bufferOptional: wrapOptionalTypeNode(types.buffer),
-        dateOptional: wrapOptionalTypeNode(types.date),
+        booleanOptional: wrapOptionalTypeNode(types.boolean, "booleanOptional"),
+        stringOptional: wrapOptionalTypeNode(types.string, "stringOptional"),
+        floatOptional: wrapOptionalTypeNode(types.float, "floatOptional"),
+        integerOptional: wrapOptionalTypeNode(types.integer, "integerOptional"),
+        bufferOptional: wrapOptionalTypeNode(types.buffer, "bufferOptional"),
+        dateOptional: wrapOptionalTypeNode(types.date, "dateOptional"),
 
         enumsOptional: <E extends string>(
-            enumsList: E[]): TableStoreTypeNode<E | undefined> => wrapOptionalTypeNode(types.enums(enumsList)),
+            enumsList: E[]): TableStoreTypeNode<E | undefined> => wrapOptionalTypeNode(enums(enumsList), "enumsOptional"),
 
-        booleanDefaultValue: wrapDefaultValueTypeNode(types.boolean),
-        stringDefaultValue: wrapDefaultValueTypeNode(types.string),
-        floatDefaultValue: wrapDefaultValueTypeNode(types.float),
-        integerDefaultValue: wrapDefaultValueTypeNode(types.integer),
-        bufferDefaultValue: wrapDefaultValueTypeNode(types.buffer),
-        dateDefaultValue: wrapDefaultValueTypeNode(types.date),
+        booleanDefaultValue: wrapDefaultValueTypeNode(types.boolean, "booleanDefaultValue"),
+        stringDefaultValue: wrapDefaultValueTypeNode(types.string, "stringDefaultValue"),
+        floatDefaultValue: wrapDefaultValueTypeNode(types.float, "floatDefaultValue"),
+        integerDefaultValue: wrapDefaultValueTypeNode(types.integer, "integerDefaultValue"),
+        bufferDefaultValue: wrapDefaultValueTypeNode(types.buffer, "bufferDefaultValue"),
+        dateDefaultValue: wrapDefaultValueTypeNode(types.date, "dateDefaultValue"),
         enumsDefaultValue: <E extends string>(enumsList: E[], defaultValue: E): TableStoreTypeNode<E> => {
             const enumsType = enumType(enumsList);
-            const enumsTypeWithDefaultValue = wrapDefaultValueTypeNode(enumsType);
+            const enumsTypeWithDefaultValue = wrapDefaultValueTypeNode(enumsType, "enumsDefaultValue");
             return enumsTypeWithDefaultValue(defaultValue);
         },
     };
     return Object.freeze(wrappedTypes);
 }
 
-function createJavascriptTypeNode<V>(isValid: (value: V) => boolean): TableStoreTypeNode<V> {
+// eslint-disable-next-line max-len
+function createJavascriptTypeNode<V, T extends keyof TableStoreTypeDefinition>(isValid: (value: V) => boolean, type: T): TableStoreTypeNode<V> {
     return Object.freeze({
+        type,
         isValid,
         toTableStoreValue: (value) => value,
         fromTableStoreValue: (value) => value,
     });
 }
 
-function wrapOptionalTypeNode<V>(typeNode: TableStoreTypeNode<V>): TableStoreTypeNode<V | undefined> {
+// eslint-disable-next-line max-len
+function wrapOptionalTypeNode<V, T extends keyof TableStoreTypeDefinition>(typeNode: TableStoreTypeNode<V>, type: T): TableStoreTypeNode<V | undefined> {
     return Object.freeze({
+        type,
         isValid: (value) => {
             if (value === undefined) {
                 return true;
@@ -189,8 +205,10 @@ function wrapOptionalTypeNode<V>(typeNode: TableStoreTypeNode<V>): TableStoreTyp
     });
 }
 
-function wrapDefaultValueTypeNode<V>(typeNode: TableStoreTypeNode<V>): (defaultValue: V) => TableStoreTypeNode<V> {
+// eslint-disable-next-line max-len
+function wrapDefaultValueTypeNode<V, T extends keyof TableStoreTypeDefinition>(typeNode: TableStoreTypeNode<V>, type: T): (defaultValue: V) => TableStoreTypeNode<V> {
     return (defaultValue) => Object.freeze({
+        type,
         isValid: (value: V) => {
             if (value === undefined) {
                 return true;

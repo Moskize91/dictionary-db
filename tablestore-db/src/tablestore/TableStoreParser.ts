@@ -1,16 +1,18 @@
 import TableStore from "tablestore";
 
 import type { Condition, Conditions } from "netless-dictionary-db";
-import type { TableStoreModel, TableStoreTypeNode } from "./TableStoreType";
+import type { TableStoreModel, TableStoreTypeNode } from "../TableStoreType";
 import type { KeysDescription } from "./ModelNode";
-import { conditionsToString } from "./ConditionPrinter";
+import { conditionsToString } from "../ConditionPrinter";
 
 export type ModelProperties = {
     readonly primaryKeys: any[];
     readonly attributeColumns: any[];
 };
 
-export function parseModelObject<MODEL>({ keys, columes }: TableStoreModel<MODEL>, target: MODEL): ModelProperties {
+export function parseModelObject<MODEL extends { [key: string]: any }>(
+    { keys, columes }: TableStoreModel<MODEL>, target: MODEL,
+): ModelProperties {
     const primaryKeys: any[] = [];
     const attributeColumns: any[] = [];
 
@@ -68,9 +70,11 @@ export function parseModelProperties({ keys, columes }: TableStoreModel<any>,
     return mergedObject;
 }
 
-export function parseColumes<MODEL>(keysDescription: KeysDescription<MODEL>,
-                                    columes: Readonly<{ [K in keyof MODEL]?: TableStoreTypeNode<MODEL[K]> }>,
-                                    { conditions, includesAll }: Conditions<MODEL>, target: Partial<MODEL>): any[] {
+export function parseColumes<MODEL extends { [key: string]: any }>(
+    keysDescription: KeysDescription<MODEL>,
+    columes: Readonly<{ [K in keyof MODEL]?: TableStoreTypeNode<MODEL[K]> }>,
+    { conditions, includesAll }: Conditions<MODEL>, target: Partial<MODEL>,
+): any[] {
     if (includesAll) {
         throw new Error("cannot includes all");
     }
@@ -110,8 +114,10 @@ export function parseColumes<MODEL>(keysDescription: KeysDescription<MODEL>,
     return updateOfAttributeColumns;
 }
 
-export function parseConditionsToPrimaryKey<MODEL>(keys: Readonly<{ [K in keyof MODEL]?: TableStoreTypeNode<MODEL[K]> }>,
-                                                   { conditions, includesAll }: Conditions<MODEL>): any[] {
+export function parseConditionsToPrimaryKey<MODEL extends { [key: string]: any }>(
+    keys: Readonly<{ [K in keyof MODEL]?: TableStoreTypeNode<MODEL[K]> }>,
+    { conditions, includesAll }: Conditions<MODEL>,
+): any[] {
     if (includesAll) {
         throw new Error("cannot includes all");
     }
@@ -146,8 +152,10 @@ export type PrimaryKeyRange = {
     readonly endPrimaryKey: any[];
 };
 
-export function parseConditionsToRange<MODEL>(keys: Readonly<{ [K in keyof MODEL]?: TableStoreTypeNode<MODEL[K]> }>,
-                                              { conditions }: Conditions<MODEL>): PrimaryKeyRange {
+export function parseConditionsToRange<MODEL extends { [key: string]: any }>(
+    keys: Readonly<{ [K in keyof MODEL]?: TableStoreTypeNode<MODEL[K]> }>,
+    { conditions }: Conditions<MODEL>,
+): PrimaryKeyRange {
     if (conditions.length > 1) {
         throw new Error("tablestore not supported or condition");
     }

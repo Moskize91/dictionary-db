@@ -1,6 +1,6 @@
 import type { Conditions, Condition } from "netless-dictionary-db";
-import type { TableStoreModel, TableStoreTypeNode } from "./TableStoreType";
-import { conditionsToString } from "./ConditionPrinter";
+import type { TableStoreModel, TableStoreTypeNode } from "../TableStoreType";
+import { conditionsToString } from "../ConditionPrinter";
 
 export type KeysDescription<MODELS extends { [key: string]: any }> = {
     readonly name: string;
@@ -19,7 +19,7 @@ export class ModelNode<MODELS extends { [key: string]: any }> {
 
     private readonly selfKeys: KeysDescription<MODELS>;
     private readonly _keys: ReadonlyArray<KeysDescription<MODELS>>;
-    private readonly _columes: { readonly [K in keyof MODELS]?: TableStoreTypeNode<MODELS[K]> };
+    private readonly _columns: { readonly [K in keyof MODELS]?: TableStoreTypeNode<MODELS[K]> };
 
     public constructor(name: string, model: TableStoreModel<MODELS>) {
         const patchableKeys = this.createPatchableKeys(model);
@@ -36,10 +36,10 @@ export class ModelNode<MODELS extends { [key: string]: any }> {
 
         if (model.indexes) {
             for (const indexName in model.indexes) {
-                const indexPrimiaryKeys = model.indexes[indexName];
+                const indexPrimaryKeys = model.indexes[indexName];
                 const combinedKeys: { [K in keyof MODELS]?: TableStoreTypeNode<MODELS[K]> } = {};
 
-                for (const key of indexPrimiaryKeys) {
+                for (const key of indexPrimaryKeys) {
                     combinedKeys[key] = model.keys[key] || model.columes[key];
                 }
                 for (const key in model.keys) {
@@ -58,7 +58,7 @@ export class ModelNode<MODELS extends { [key: string]: any }> {
             }
         }
         this._keys = Object.freeze(tables);
-        this._columes = Object.freeze({ ...model.columes });
+        this._columns = Object.freeze({ ...model.columes });
     }
 
     private createPatchableKeys(model: TableStoreModel<MODELS>): { readonly [K in keyof MODELS]: boolean } {
@@ -73,7 +73,7 @@ export class ModelNode<MODELS extends { [key: string]: any }> {
     }
 
     public get columes(): { readonly [K in keyof MODELS]?: TableStoreTypeNode<MODELS[K]> } {
-        return this._columes;
+        return this._columns;
     }
 
     public get keys(): { readonly [K in keyof MODELS]?: TableStoreTypeNode<MODELS[K]> } {
@@ -98,7 +98,7 @@ export class ModelNode<MODELS extends { [key: string]: any }> {
 
         for (const keysDescription of this._keys) {
             if (keysDescription.indexKeysCount < currentIndexKeysCount &&
-                this.isCondtionsMatch(keysDescription, conditions)) {
+                this.isMatch(keysDescription, conditions)) {
                 suitableKeysDescription = keysDescription;
                 currentIndexKeysCount = keysDescription.indexKeysCount;
             }
@@ -109,8 +109,8 @@ export class ModelNode<MODELS extends { [key: string]: any }> {
         return suitableKeysDescription;
     }
 
-    private isCondtionsMatch({ indexKeys }: KeysDescription<MODELS>,
-                             orConditions: ReadonlyArray<ReadonlyArray<Condition<MODELS, keyof MODELS>>>): boolean {
+    private isMatch({ indexKeys }: KeysDescription<MODELS>,
+                    orConditions: ReadonlyArray<ReadonlyArray<Condition<MODELS, keyof MODELS>>>): boolean {
         for (const andConditions of orConditions) {
             for (const condition of andConditions) {
                 if (!indexKeys[condition.columeName]) {

@@ -4,7 +4,7 @@ module.exports = {
         "plugin:@netless/recommended",
     ],
     rules: {
-        "max-len": ["error", { code: 130 }],
+        "max-len": ["error", { code: 140 }],
         "max-classes-per-file": ["warn", 5],
         "operator-linebreak": ["error", "after"],
         "no-restricted-syntax": ["error", "WithStatement"],

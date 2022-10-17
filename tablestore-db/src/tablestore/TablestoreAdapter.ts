@@ -2,7 +2,7 @@ import TableStore from "tablestore";
 
 import type { DatabaseAdapter, GetDescription, Conditions, ModelDefinition, PropertyDefinition } from "netless-dictionary-db";
 import type { PrimaryKeyRange } from "./TableStoreParser";
-import type { TableStoreModel } from "./TableStoreType";
+import type { TableStoreModelDefinition } from "../TableStoreType";
 import type { KeysDescription } from "./ModelNode";
 import {
     parseColumes,
@@ -12,11 +12,11 @@ import {
     parseConditionsToPrimaryKey,
 } from "./TableStoreParser";
 
-import { isTablestoreValueEquals as isTableStoreValueEquals } from "./TableStoreType";
+import { isTablestoreValueEquals as isTableStoreValueEquals } from "../TableStoreType";
 import { ModelNode } from "./ModelNode";
-import { SyncInvoker } from "./SyncInvoker";
-import { conditionsToString } from "./ConditionPrinter";
-import { TableStoreLog } from "./TableStoreLog";
+import { SyncInvoker } from "../SyncInvoker";
+import { conditionsToString } from "../ConditionPrinter";
+import { TableStoreLog } from "../TableStoreLog";
 
 const DefaultSlicesCount = 1024;
 const DeleteSlicesCount = 256;
@@ -29,10 +29,6 @@ const SubOperationsSeatCount = 24;
 type RangeOfDataResult = {
     readonly nextStartPrimaryKey?: any[];
     readonly rows: any[];
-};
-
-export type TableStoreModelDefinition<MODELS extends { [key: string]: any }> = {
-    readonly [K in keyof MODELS]: TableStoreModel<MODELS[K]>;
 };
 
 export type TablestoreOptions = {
@@ -61,7 +57,7 @@ export class TablestoreAdapterFactory<MODELS extends { [key: string]: any }> {
 
 }
 
-class TablestoreAdapter<MODELS extends Object> implements DatabaseAdapter<MODELS> {
+class TablestoreAdapter<MODELS extends { [key: string]: { [key: string]: any } }> implements DatabaseAdapter<MODELS> {
 
     private readonly client: any;
     private readonly modelNodes: { readonly [K in keyof MODELS]: ModelNode<MODELS[K]> };

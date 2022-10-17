@@ -69,13 +69,13 @@ export class SetBuilderImplement<NAME extends string, T extends { [key: string]:
         if (this.isOverride !== undefined) {
             throw new Error("delete cannot set override");
         }
-        const apdater = this.model.adtaper;
+        const adapter = this.model.adtaper;
         const conditions = this.condition.generate(this.model.definition);
 
-        if (apdater.delete) {
-            return await apdater.delete(this.model.name, conditions);
+        if (adapter.delete) {
+            return await adapter.delete(this.model.name, conditions);
         } else {
-            const deletedCount = await apdater.deleteAll(this.model.name, conditions, 1);
+            const deletedCount = await adapter.deleteAll(this.model.name, conditions, 1);
             if (deletedCount > 0) {
                 return true;
             } else {
@@ -88,9 +88,9 @@ export class SetBuilderImplement<NAME extends string, T extends { [key: string]:
         if (this.isOverride !== undefined) {
             throw new Error("deleteAll cannot set override");
         }
-        const apdater = this.model.adtaper;
+        const adapter = this.model.adtaper;
         const conditions = this.condition.generate(this.model.definition);
-        return await apdater.deleteAll(this.model.name, conditions, this.limitCount);
+        return await adapter.deleteAll(this.model.name, conditions, this.limitCount);
     }
 
 }

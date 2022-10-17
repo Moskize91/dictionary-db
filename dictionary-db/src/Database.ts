@@ -7,12 +7,12 @@ export class Database<MODELS extends Object> {
 
     private readonly models: { readonly [K in keyof MODELS]: Model<MODELS[K]> };
 
-    public constructor(adtaper: DatabaseAdapter<MODELS>) {
+    public constructor(adapter: DatabaseAdapter<MODELS>) {
         const models: { [K in keyof MODELS]?: Model<MODELS[K]> } = {};
-        const modelDefinitions = adtaper.getModelDefinitions();
+        const modelDefinitions = adapter.getModelDefinitions();
 
         for (const key in modelDefinitions) {
-            models[key] = new ModelImplement(key, adtaper as any, modelDefinitions[key]);
+            models[key] = new ModelImplement(key, adapter as any, modelDefinitions[key]);
         }
         this.models = Object.freeze(models) as { readonly [K in keyof MODELS]: Model<MODELS[K]> };
     }
@@ -34,7 +34,7 @@ export class ModelImplement<NAME extends string, T extends { [key: string]: any 
     public readonly definition: ModelDefinition<T>;
     public readonly conditionableKeys: ReadonlyArray<keyof T>;
 
-    private readonly conditionableKeysMap: { readonly [K in keyof T]: boolean };
+    private readonly conditionalKeysMap: { readonly [K in keyof T]: boolean };
 
     public constructor(name: NAME, adtaper: DatabaseAdapter<{ [key in NAME]: T }>, definition: ModelDefinition<T>) {
         this.name = name;
@@ -51,7 +51,7 @@ export class ModelImplement<NAME extends string, T extends { [key: string]: any 
             }
             conditionableKeysMap[key] = isConditionable;
         }
-        this.conditionableKeysMap = Object.freeze(conditionableKeysMap) as { readonly [K in keyof T]: boolean };
+        this.conditionalKeysMap = Object.freeze(conditionableKeysMap) as { readonly [K in keyof T]: boolean };
         this.conditionableKeys = Object.freeze(conditionableKeys);
     }
 
@@ -70,7 +70,7 @@ export class ModelImplement<NAME extends string, T extends { [key: string]: any 
     }
 
     public isConditionableKey(key: keyof T): boolean {
-        return this.conditionableKeysMap[key];
+        return this.conditionalKeysMap[key];
     }
 
     private async handlePost(value: T, isOverride: boolean): Promise<boolean> {

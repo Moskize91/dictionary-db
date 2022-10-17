@@ -1,11 +1,14 @@
 import { Database } from "netless-dictionary-db";
-import { TablestoreAdapterFactory, TableStoreType } from "../src/index";
+import type { TableStoreModelDefinition } from "../src/index";
+import { DatabaseAdapterFactory, TableStoreType } from "../src/index";
 
 export type TestModels = {
     readonly rooms: RoomModel;
     readonly snapshots: SnapshotModel;
     readonly members: MemberModel;
     readonly accessKeys: AccessKeyModel;
+    readonly roomStates: RoomStatesModel;
+    readonly sliceBegins: SliceBeginModel;
 };
 
 export type RoomModel = {
@@ -16,6 +19,20 @@ export type RoomModel = {
     readonly usersMaxCount: number;
     readonly rate: number;
     readonly createdAt: Date;
+};
+
+export type SliceBeginModel = {
+    roomUUID: string;
+    beginAt: number;
+    uuid: string;
+};
+
+export type RoomStatesModel = {
+    readonly timestamp: number;
+    readonly uuid: string;
+    readonly teamId: string;
+    readonly appUUID: string;
+    readonly state: "active" | "release" | "recordOn" | "recordOff";
 };
 
 export type SnapshotModel = {
@@ -42,7 +59,7 @@ export type AccessKeyModel = {
     readonly createdAt: Date;
 };
 
-const adapterFactory = new TablestoreAdapterFactory<TestModels>({
+const modeDefinition: TableStoreModelDefinition<TestModels> = {
     "rooms": {
         keys: {
             "uuid": TableStoreType.string,
@@ -65,6 +82,18 @@ const adapterFactory = new TablestoreAdapterFactory<TestModels>({
         columes: {
             "frameId": TableStoreType.integer,
             "createdAt": TableStoreType.integer,
+        },
+    },
+    // 这个数据库不存在，主要是为了测试 condition 操作逻辑
+    "roomStates": {
+        keys: {
+            timestamp: TableStoreType.integer,
+            uuid: TableStoreType.string,
+        },
+        columes: {
+            teamId: TableStoreType.string,
+            appUUID: TableStoreType.stringDefaultValue("unknown"),
+            state: TableStoreType.enums(["active", "release", "recordOn", "recordOff"]),
         },
     },
     "members": {
@@ -92,11 +121,31 @@ const adapterFactory = new TablestoreAdapterFactory<TestModels>({
             "accessKeys_teamUUID_index": ["teamUUID"],
         },
     },
-});
+    "sliceBegins": {
+        keys: {
+            "roomUUID": TableStoreType.string,
+            "beginAt": TableStoreType.integer,
+            "uuid": TableStoreType.string,
+        },
+        columes: {},
+    },
+};
 
-export const db: Database<TestModels> = new Database(adapterFactory.create({
+const db: Database<TestModels> = new Database(new DatabaseAdapterFactory<TestModels>(modeDefinition).create({
     accessKeyId: "***",
     secretAccessKey: "***",
     instancename: "unit-test",
     endpoint: "https://wrcev2.cn-hangzhou.ots.aliyuncs.com",
 }));
+
+const db2: Database<TestModels> = new Database(new DatabaseAdapterFactory<TestModels>(modeDefinition).create({
+    dynamodb: {
+        region: "ap-northeast-1",
+        credentials: {
+            accessKeyId: "***",
+            secretAccessKey: "***",
+        },
+    },
+}));
+
+export const databaseSet = { tablestore: db, dynamodb: db2 };

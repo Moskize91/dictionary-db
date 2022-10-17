@@ -1,6 +1,6 @@
 {
   "name": "netless-tablestore-db",
-  "version": "1.0.0",
+  "version": "2.0.1",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "repository": "git@github.com:Moskize91/dictionary-db.git",
@@ -15,7 +15,8 @@
     "test": "gjs test"
   },
   "dependencies": {
-    "tablestore": "^5.0.6"
+    "tablestore": "^5.0.6",
+    "@aws-sdk/client-dynamodb": "3.188.0"
   },
   "devDependencies": {
     "source-map-support": "^0.5.19"
