@@ -1,8 +1,8 @@
 {
   "name": "dictionary-db",
-  "version": "0.0.1",
-  "main": "dist/index.mjs",
-  "module": "dist/index.mjs",
+  "version": "0.0.2",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.mjs",
   "types": "dist/index.d.ts",
   "repository": "git@github.com:Moskize91/dictionary-db.git",
   "author": "Tao Zeyu <i@taozeyu>",
@@ -13,7 +13,8 @@
   ],
   "scripts": {
     "ts-check": "tsc --noEmit",
-    "build": "node build/build.mjs && tsc -p . --emitDeclarationOnly"
+    "build": "node build/build.mjs && tsc -p . --emitDeclarationOnly",
+    "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
     "@types/node": "^18.11.9",

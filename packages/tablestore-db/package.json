@@ -1,8 +1,8 @@
 {
   "name": "tablestore-dictionary-db",
-  "version": "0.0.1",
-  "main": "dist/index.mjs",
-  "module": "dist/index.mjs",
+  "version": "0.0.2",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.mjs",
   "types": "dist/index.d.ts",
   "repository": "git@github.com:Moskize91/dictionary-db.git",
   "author": "Tao Zeyu <i@taozeyu>",
@@ -15,7 +15,8 @@
     "start": "node dist/lib-commonjs/src/index.js",
     "ts-check": "tsc --noEmit",
     "build": "node build/build.mjs && tsc -p . --emitDeclarationOnly",
-    "test": "node build/build-test.mjs && mocha --enable-source-maps test/dist/index.js"
+    "test": "node build/build-test.mjs && mocha --enable-source-maps test/dist/index.js",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "3.188.0",

@@ -11,10 +11,15 @@ const outputPath = resolve(packagePath, "./dist");
 async function build() {
     rimraf.sync(outputPath);
 
-    await esbuild.build({
+    await esbuildBuild("esm", "index.esm.mjs");
+    await esbuildBuild("cjs", "index.cjs.js");
+}
+
+function esbuildBuild(format, outputFile) {
+    return esbuild.build({
         entryPoints: [resolve(packagePath, "./src/index.ts")],
-        outfile: resolve(outputPath, "index.mjs"),
-        format: "esm",
+        outfile: resolve(outputPath, outputFile),
+        format,
         target: ["es2017", "node16"],
         sourcemap: false,
         bundle: true,
