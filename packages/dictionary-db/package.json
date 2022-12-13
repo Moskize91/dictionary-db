@@ -1,0 +1,25 @@
+{
+  "name": "dictionary-db",
+  "version": "0.0.1",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "repository": "git@github.com:Moskize91/dictionary-db.git",
+  "author": "Tao Zeyu <i@taozeyu>",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "ts-check": "tsc --noEmit",
+    "build": "node build/build.mjs && tsc -p . --emitDeclarationOnly"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.9",
+    "rimraf": "^3.0.0",
+    "esbuild": "^0.15.14",
+    "esbuild-node-externals": "^1.5.0",
+    "typescript": "4.9.3"
+  }
+}

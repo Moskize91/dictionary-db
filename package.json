@@ -1,38 +1,10 @@
 {
-    "name": "netless-dictionary-db",
+    "name": "dictionary-db",
     "license": "MIT",
     "author": "Tao Zeyu <i@taozeyu>",
     "repository": "git@github.com:Moskize91/dictionary-db.git",
-    "workspaces": [
-        "dictionary-db",
-        "tablestore-db"
-    ],
     "scripts": {
-        "build": "scripts/build-all.sh"
-    },
-    "dependencies": {
-        "core-js": "^3.16.1"
-    },
-    "devDependencies": {
-        "@types/node": "^13.5.0",
-        "@types/chai": "^4.2.12",
-        "@types/chai-as-promised": "^7.1.3",
-        "@types/mocha": "^8.0.3",
-        "@netless/eslint-plugin": "^1.1.4",
-        "@typescript-eslint/eslint-plugin": "^4.4.1",
-        "esbuild": "^0.12.20",
-        "mochawesome": "^4.1.0",
-        "nyc": "^15.1.0",
-        "chai": "^4.2.0",
-        "chai-as-promised": "^7.1.1",
-        "mocha": "^8.1.1",
-        "typescript": "4.3.5",
-        "prettier": "^2.1.2",
-        "eslint": "^7.8.1",
-        "eslint-config-airbnb-typescript": "^12.0.0",
-        "eslint-plugin-import": "^2.22.0",
-        "eslint-plugin-jsx-a11y": "^6.3.1",
-        "eslint-plugin-react": "^7.20.3",
-        "eslint-plugin-react-hooks": "^4.0.8"
+        "build": "pnpm -r build",
+        "test": "pnpm -r test"
     }
 }

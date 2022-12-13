@@ -1,8 +1,10 @@
-# netless-dictionary-db
+# dictionary-db
+
+![main](https://github.com/moskize91/dictionary-db/actions/workflows/build-and-test.yml/badge.svg?branch=main)
 
 ## 安装
 
-你需要安装 ``netless-dictionary-db`` 和 ``netless-tablestore-db`` 两个项目。前者是接口，后者是实现。
+你需要安装 ``dictionary-db`` 和 ``tablestore-dictionary-db`` 两个项目。前者是接口，后者是实现。
 
 ## 定义数据结构
 
@@ -41,7 +43,7 @@ export const adapterFactory = new TablestoreAdapterFactory<MyModels>({
 有了适配器，就可以构造 ``Database`` 实例了。
 
 ```typescript
-import { Database } from "netless-dictionary-db";
+import { Database } from "dictionary-db";
 
 const db = new Database(adapterFactory.create({
     accessKeyId: "***",

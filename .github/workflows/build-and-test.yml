@@ -1,0 +1,41 @@
+name: Build Project
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2.2.4
+        with:
+          version: 7
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm i
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+        env:
+          TABLESTORE_AK: ${{ secrets.TABLESTORE_AK }}
+          TABLESTORE_SK: ${{ secrets.TABLESTORE_SK }}
+          DYNAMODB_AK: ${{ secrets.DYNAMODB_AK }}
+          DYNAMODB_SK: ${{ secrets.DYNAMODB_SK }}
+          TABLESTORE_INSTANCENAME: "unit-test"
+          TABLESTORE_ENDPOINT: "https://wrcev2.cn-hangzhou.ots.aliyuncs.com"
+          DYNAMODB_REGION: "ap-northeast-1"
